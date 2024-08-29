@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from obs import ObsClient, PutObjectHeader
@@ -12,7 +12,6 @@ from werkzeug.utils import secure_filename
 
 from apigw_sdk.apig_sdk import signer
 
-# 初始化Flask
 app = Flask(__name__)
 
 # 配置数据库连接信息
@@ -134,6 +133,79 @@ def get_batch_summary():
     }
 
 
+# 获取指定批次信息
+def get_single_batch_summary(batch_id):
+    # 查询特定批次的信息
+    batch = Batch.query.get(batch_id)
+
+    if batch is None:
+        return None
+
+    # 计算总检测数
+    total_items = batch.total_items
+
+    # 计算缺陷数
+    defective_items = batch.defective_items
+
+    # 计算缺陷率
+    if total_items:
+        defective_rate = defective_items / total_items
+    else:
+        defective_rate = 0.0
+
+    # 返回汇总信息
+    return {
+        'batch_id': batch_id,
+        'total_items': total_items,
+        'defective_items': defective_items,
+        'defective_rate': defective_rate,
+    }
+
+
+def SingleStatistics(batch_id):
+    # 查询指定批次的各种缺陷总数
+    total_defects = (
+        db.session.query(
+            func.sum(DefectDetail.Mouse_bite).label('mouse_bite'),
+            func.sum(DefectDetail.Open_circuit).label('open_circuit'),
+            func.sum(DefectDetail.Short).label('short'),
+            func.sum(DefectDetail.Spur).label('spur'),
+            func.sum(DefectDetail.Spurious_copper).label('spurious_copper')
+        )
+        .join(DefectiveItem, DefectDetail.defective_item_id == DefectiveItem.id)
+        .filter(DefectiveItem.batch_id == batch_id)
+        .one_or_none()
+    )
+
+    if total_defects is None:
+        return None
+
+    # 解包结果
+    mouse_bite, open_circuit, short, spur, spurious_copper = total_defects
+
+    # 计算总缺陷数
+    total_defects_count = sum([mouse_bite, open_circuit, short, spur, spurious_copper])
+
+    if total_defects_count == 0:
+        total_defects_count = 1
+
+    # 计算每种缺陷的概率
+    mouse_bite_prob = (mouse_bite or 0) / total_defects_count
+    open_circuit_prob = (open_circuit or 0) / total_defects_count
+    short_prob = (short or 0) / total_defects_count
+    spur_prob = (spur or 0) / total_defects_count
+    spurious_copper_prob = (spurious_copper or 0) / total_defects_count
+
+    # 返回概率信息
+    return {
+        'mouse_bite': {'count': mouse_bite or 0, 'probability': mouse_bite_prob},
+        'open_circuit': {'count': open_circuit or 0, 'probability': open_circuit_prob},
+        'short': {'count': short or 0, 'probability': short_prob},
+        'spur': {'count': spur or 0, 'probability': spur_prob},
+        'spurious_copper': {'count': spurious_copper or 0, 'probability': spurious_copper_prob}
+    }
+
+
 # 统计缺陷数据
 def Statistics():
     # 查询各种缺陷总数
@@ -238,6 +310,8 @@ def process_detection_results(file_path, batch_id):
     # 解析检测结果
     try:
         detection_json = json.loads(detection_result)
+        # Debug.Log("检测结果")
+        print(detection_json)
     except json.JSONDecodeError:
         print("Failed to parse JSON from detection result")
         return
@@ -377,6 +451,17 @@ def UploadPics():
         return ','.join(filenames) + ' successfully uploaded'
 
 
+from flask import jsonify, request
+
+
+@app.route('/PcbData/<int:batch_id>', methods=['GET'])
+def single_pcb_data(batch_id):
+    pcb_summary = get_single_batch_summary(batch_id)
+    if pcb_summary is None:
+        return jsonify({'error': 'No PCB data found'}), 404
+    return jsonify(pcb_summary), 200
+
+
 # API: 获取PCB数据汇总
 @app.route('/PcbData', methods=['GET'])
 def pcb_data():
@@ -384,6 +469,14 @@ def pcb_data():
     if pcb is None:
         return jsonify({'error': 'No PCB data found.'}), 404
     return jsonify(pcb), 200
+
+
+@app.route('/Statistics/<int:batch_id>', methods=['GET'])
+def single_statistics(batch_id):
+    stats = SingleStatistics(batch_id)
+    if stats is None:
+        return jsonify({'error': 'No statistics data found'}), 404
+    return jsonify(stats), 200
 
 
 # API: 获取统计数据
