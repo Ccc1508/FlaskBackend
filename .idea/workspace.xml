@@ -5,7 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b25f9b80-63e2-4656-ae3e-405871ee72c0" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/infer_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/obs_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Server/services.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Scripts/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/app.py" afterDir="false" />
     </list>
@@ -43,6 +48,9 @@
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="2kTOVuZ2mx27u7nzUvfZzp0uWBu" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -97,6 +105,7 @@
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="F:\Codes\Python\FlaskService\Scripts" />
+      <recent name="F:\Codes\Python\FlaskService\Scripts\Server" />
       <recent name="F:\Codes\Python\FlaskService\Scripts\Test" />
     </key>
   </component>
@@ -115,7 +124,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Scripts/app.py" />
+      <option name="SCRIPT_NAME" value="F:\Codes\Python\FlaskService\Scripts\app.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -208,7 +217,6 @@
       <list>
         <item itemvalue="Python.app" />
         <item itemvalue="Flask 服务器.Flask (Scripts/app.py)" />
-        <item itemvalue="Flask 服务器.Flask (Scripts/TestOBS.py)" />
         <item itemvalue="Python 测试.unitTest.TestApp.test_upload_to_obs 的 Python 测试" />
         <item itemvalue="Python 测试.Python 测试 (F:/Codes/Python/FlaskService/Scripts/Test.py 内)" />
       </list>
@@ -270,7 +278,8 @@
       <workItem from="1724957012110" duration="2088000" />
       <workItem from="1724959120777" duration="3019000" />
       <workItem from="1724962162380" duration="94000" />
-      <workItem from="1724984283741" duration="609000" />
+      <workItem from="1724984283741" duration="701000" />
+      <workItem from="1724984993784" duration="764000" />
     </task>
     <servers />
   </component>

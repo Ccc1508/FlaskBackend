@@ -4,7 +4,6 @@ from datetime import datetime
 
 import requests
 from flask import Flask
-from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from obs import ObsClient, PutObjectHeader
 from sqlalchemy import func
@@ -17,9 +16,6 @@ app = Flask(__name__)
 # 配置数据库连接信息
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://harmony:123456@101.43.96.132/harmonyos'
 db = SQLAlchemy(app)
-
-# 启用跨域资源共享
-CORS(app)
 
 
 # Batch Model (批次模型)
