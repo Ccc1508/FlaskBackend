@@ -84,7 +84,7 @@ class DefectType(db.Model):
 #     db.create_all()
 
 # 序列化 Batch 信息
-def serialize_batch(batch):
+def SerializeBatch(batch):
     return {
         'id': batch.id,
         'timestamp': batch.timestamp.isoformat(),
@@ -117,7 +117,7 @@ def serialize_batch(batch):
 
 
 # 获取批次汇总信息
-def get_batch_summary():
+def GetBatchSummary():
     total_items = db.session.query(func.sum(Batch.total_items)).scalar()
     defective_items = db.session.query(func.sum(Batch.defective_items)).scalar()
 
@@ -134,7 +134,7 @@ def get_batch_summary():
 
 
 # 获取指定批次信息
-def get_single_batch_summary(batch_id):
+def GetSingleBatchSummary(batch_id):
     # 查询特定批次的信息
     batch = Batch.query.get(batch_id)
 
@@ -245,7 +245,7 @@ def Statistics():
 
 
 # 上传文件至华为云OBS服务
-def upload_to_obs(file_path):
+def UploadToObs(file_path):
     # 访问密钥
     ak = "RTHDGTQWOD7XI4VVXDU2"
     sk = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
@@ -272,7 +272,7 @@ def upload_to_obs(file_path):
 
 
 # 调用模型进行缺陷检测推理
-def detect(file):
+def Detect(file):
     ak = "RTHDGTQWOD7XI4VVXDU2"
     sk = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
     url = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/2db1606a-62dc-46c5-81cd-d0781cf2bd37"
@@ -298,9 +298,9 @@ def detect(file):
 
 
 # 处理检测结果并保存到数据库
-def process_detection_results(file_path, batch_id):
+def ProcessDetectionResults(file_path, batch_id):
     # 调用检测函数
-    detection_result = detect(open(file_path, 'rb'))
+    detection_result = Detect(open(file_path, 'rb'))
 
     # 如果返回状态码，则失败
     if isinstance(detection_result, int):
@@ -329,7 +329,7 @@ def process_detection_results(file_path, batch_id):
     db.session.commit()
 
     # 上传文件到OBS并创建缺陷详情记录
-    obs_object_url = upload_to_obs(file_path)
+    obs_object_url = UploadToObs(file_path)
 
     defect_detail = DefectDetail(
         image_url=obs_object_url,
@@ -403,7 +403,7 @@ def UploadPic():
 
     for file in files:
         # 对文件调用detect函数
-        detection_result = detect(file)
+        detection_result = Detect(file)
         results.append(detection_result)
 
     # 返回结果
@@ -443,7 +443,7 @@ def UploadPics():
             filenames.append(filename)
 
             # 处理检测结果并保存到数据库
-            process_detection_results(file_path, new_batch.id)  # 使用 new_batch.id
+            ProcessDetectionResults(file_path, new_batch.id)  # 使用 new_batch.id
 
         if not filenames:
             return 'No Files'
@@ -455,8 +455,8 @@ from flask import jsonify, request
 
 
 @app.route('/PcbData/<int:batch_id>', methods=['GET'])
-def single_pcb_data(batch_id):
-    pcb_summary = get_single_batch_summary(batch_id)
+def GetSinglePcbData(batch_id):
+    pcb_summary = GetSingleBatchSummary(batch_id)
     if pcb_summary is None:
         return jsonify({'error': 'No PCB data found'}), 404
     return jsonify(pcb_summary), 200
@@ -464,15 +464,15 @@ def single_pcb_data(batch_id):
 
 # API: 获取PCB数据汇总
 @app.route('/PcbData', methods=['GET'])
-def pcb_data():
-    pcb = get_batch_summary()
+def GetPcbData():
+    pcb = GetBatchSummary()
     if pcb is None:
         return jsonify({'error': 'No PCB data found.'}), 404
     return jsonify(pcb), 200
 
 
 @app.route('/Statistics/<int:batch_id>', methods=['GET'])
-def single_statistics(batch_id):
+def GetSingleStatistics(batch_id):
     stats = SingleStatistics(batch_id)
     if stats is None:
         return jsonify({'error': 'No statistics data found'}), 404
@@ -481,7 +481,7 @@ def single_statistics(batch_id):
 
 # API: 获取统计数据
 @app.route('/Statistics', methods=['GET'])
-def statistics():
+def GetStatistics():
     stats = Statistics()
     if stats is None:
         return jsonify({'error': 'No statistics data found.'}), 404
@@ -492,15 +492,15 @@ def statistics():
 @app.route('/api/batches', methods=['GET', 'POST'])
 def GetBatches():
     batches = Batch.query.all()
-    serialized_batches = [serialize_batch(batch) for batch in batches]
+    serialized_batches = [SerializeBatch(batch) for batch in batches]
     return jsonify(serialized_batches)
 
 
 # API: 根据 batch_id 获取单个批次信息
-@app.route('/api/batches/<int:batch_id>', methods=['GET', 'POST'])
+@app.route('/api/batche/<int:batch_id>', methods=['GET', 'POST'])
 def GetBatch(batch_id):
     batch = Batch.query.get(batch_id)
-    return jsonify(serialize_batch(batch))
+    return jsonify(SerializeBatch(batch))
 
 
 if __name__ == '__main__':
