@@ -485,7 +485,7 @@ def GetStatistics():
 
 
 # API: 获取所有批次信息
-@app.route('/api/batches', methods=['GET', 'POST'])
+@app.route('/batches', methods=['GET', 'POST'])
 def GetBatches():
     batches = Batch.query.all()
     serialized_batches = [SerializeBatch(batch) for batch in batches]
@@ -493,7 +493,7 @@ def GetBatches():
 
 
 # API: 根据 batch_id 获取单个批次信息
-@app.route('/api/batche/<int:batch_id>', methods=['GET', 'POST'])
+@app.route('/batche/<int:batch_id>', methods=['GET', 'POST'])
 def GetBatch(batch_id):
     batch = Batch.query.get(batch_id)
     return jsonify(SerializeBatch(batch))
