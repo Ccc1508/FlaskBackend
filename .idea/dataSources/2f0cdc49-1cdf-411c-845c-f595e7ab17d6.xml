@@ -733,7 +733,7 @@ harmonyos|schema||harmony||UPDATE|G</Grants>
       <Charset>utf8mb4</Charset>
     </collation>
     <schema id="224" parent="1" name="harmonyos">
-      <LastIntrospectionLocalTimestamp>2024-09-16.05:08:04</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2024-09-16.05:09:18</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_general_ci</CollationName>
     </schema>
     <schema id="225" parent="1" name="information_schema">

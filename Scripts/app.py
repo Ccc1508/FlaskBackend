@@ -4,6 +4,7 @@ from datetime import datetime
 
 import requests
 from flask import Flask
+from flask import jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from obs import ObsClient, PutObjectHeader
 from sqlalchemy import func
@@ -444,10 +445,10 @@ def UploadPics():
         if not filenames:
             return 'No Files'
 
-        return ','.join(filenames) + ' successfully uploaded'
-
-
-from flask import jsonify, request
+        # 计算批次的缺陷率,并判断是否需要警报
+        defective_rate = new_batch.defective_items / float(new_batch.defective_items) if new_batch.defective_items > 0 else 0
+        if defective_rate > 0.3:
+            return f"Batch{new_batch.id} : rate {defective_rate} : Unqualified"
 
 
 @app.route('/PcbData/<int:batch_id>', methods=['GET'])
