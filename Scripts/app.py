@@ -13,6 +13,13 @@ from werkzeug.utils import secure_filename
 from apigw_sdk.apig_sdk import signer
 
 app = Flask(__name__)
+ak = "RTHDGTQWOD7XI4VVXDU2"
+sk = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
+url = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/2db1606a-62dc-46c5-81cd-d0781cf2bd37"
+
+ak1 = "PRQSIGRDLJTYWFOAO3L9"
+sk1 = "r7tohXSSdKymmm86CxpDKmamJk9ERVTB1qbgxXte"
+url1 = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/fce819e1-e4bc-4fdf-9c52-e8faedd40b33"
 
 # 配置数据库连接信息
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://harmony:123456@101.43.96.132/harmonyos'
@@ -269,11 +276,7 @@ def UploadToObs(file_path):
 
 
 # 调用模型进行缺陷检测推理
-def Detect(file):
-    ak = "RTHDGTQWOD7XI4VVXDU2"
-    sk = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
-    url = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/2db1606a-62dc-46c5-81cd-d0781cf2bd37"
-
+def Detect(file, ak, sk, url):
     method = 'POST'
     headers = {"x-sdk-content-sha256": "UNSIGNED-PAYLOAD"}
     request_det = signer.HttpRequest(method, url, headers)
@@ -388,7 +391,7 @@ def ProcessDetectionResults(file_path, batch_id):
 
 
 # API: 文件上传并检测(不存入数据库)
-@app.route('/UploadPic', methods=['POST'])
+@app.route('/UploadPic/', methods=['POST'])
 def UploadPic():
     files = request.files.getlist('file') if request.method == 'POST' else None
 
@@ -500,5 +503,30 @@ def GetBatch(batch_id):
     return jsonify(SerializeBatch(batch))
 
 
+# 查询最近5个批次的信息
+@app.route('/last5batches', methods=['GET'])
+def GetRecentBatches():
+    # 查询最近 5 个批次，按照时间戳降序排序
+    recent_batches = Batch.query.order_by(Batch.timestamp.desc()).limit(5).all()
+    # 序列化批次数据
+    serialized_batches = [SerializeBatch(batch) for batch in recent_batches]
+    return jsonify(serialized_batches), 200
+
+
+@app.route('/last_batch', methods=['GET'])
+def GetLastBatch():
+    # 按时间戳升序排列并获取最后一个批次
+    last_batch = Batch.query.order_by(Batch.timestamp.desc()).first()
+
+    if last_batch is None:
+        return jsonify({'error': 'No batch data found'}), 404
+
+    serialized_batch = SerializeBatch(last_batch)
+
+    return jsonify(serialized_batch), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
+
+# TODO ：切换ak&sk和url
