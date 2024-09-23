@@ -13,9 +13,9 @@ from werkzeug.utils import secure_filename
 from apigw_sdk.apig_sdk import signer
 
 app = Flask(__name__)
-ak = "RTHDGTQWOD7XI4VVXDU2"
-sk = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
-url = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/2db1606a-62dc-46c5-81cd-d0781cf2bd37"
+ak0 = "RTHDGTQWOD7XI4VVXDU2"
+sk0 = "GsuwxkTy9EUxQWSgSxch65Dbk7Bovv1JY0aEhpzk"
+url0 = "https://infer-modelarts-cn-southwest-2.myhuaweicloud.com/v1/infers/2db1606a-62dc-46c5-81cd-d0781cf2bd37"
 
 ak1 = "PRQSIGRDLJTYWFOAO3L9"
 sk1 = "r7tohXSSdKymmm86CxpDKmamJk9ERVTB1qbgxXte"
@@ -298,9 +298,9 @@ def Detect(file, ak, sk, url):
 
 
 # 处理检测结果并保存到数据库
-def ProcessDetectionResults(file_path, batch_id):
+def ProcessDetectionResults(file_path, batch_id, ak, sk, url):
     # 调用检测函数
-    detection_result = Detect(open(file_path, 'rb'))
+    detection_result = Detect(open(file_path, 'rb'), ak ,sk ,url)
 
     # 如果返回状态码，则失败
     if isinstance(detection_result, int):
@@ -391,8 +391,8 @@ def ProcessDetectionResults(file_path, batch_id):
 
 
 # API: 文件上传并检测(不存入数据库)
-@app.route('/UploadPic/', methods=['POST'])
-def UploadPic():
+@app.route('/UploadPic/<int:modelId>', methods=['POST'])
+def UploadPic(modelId):
     files = request.files.getlist('file') if request.method == 'POST' else None
 
     if not files:
@@ -403,7 +403,10 @@ def UploadPic():
 
     for file in files:
         # 对文件调用detect函数
-        detection_result = Detect(file)
+        if modelId == 1:
+            detection_result = Detect(file, ak0, sk0, url0)
+        else:
+            detection_result = Detect(file, ak1, sk1, url1)
         results.append(detection_result)
 
     # 返回结果
@@ -411,8 +414,8 @@ def UploadPic():
 
 
 # API: 文件上传并检测传入数据库
-@app.route('/UploadPics', methods=['POST'])
-def UploadPics():
+@app.route('/UploadPics/<int:modelId>', methods=['POST'])
+def UploadPics(modelId):
     if request.method == 'POST':
         # 获取上传的文件列表
         files = request.files.getlist('file')
@@ -443,13 +446,17 @@ def UploadPics():
             filenames.append(filename)
 
             # 处理检测结果并保存到数据库
-            ProcessDetectionResults(file_path, new_batch.id)  # 使用 new_batch.id
+            if modelId == 1:
+                ProcessDetectionResults(file_path, new_batch.id, ak0, sk0, url0)  # 使用 new_batch.id
+            else:
+                ProcessDetectionResults(file_path, new_batch.id, ak1, sk1, url1)
 
         if not filenames:
             return 'No Files'
 
         # 计算批次的缺陷率,并判断是否需要警报
-        defective_rate = new_batch.defective_items / float(new_batch.defective_items) if new_batch.defective_items > 0 else 0
+        defective_rate = new_batch.defective_items / float(
+            new_batch.defective_items) if new_batch.defective_items > 0 else 0
         if defective_rate > 0.3:
             return f"Batch{new_batch.id} : rate {defective_rate} : Unqualified"
 
@@ -471,6 +478,7 @@ def GetPcbData():
     return jsonify(pcb), 200
 
 
+# 获取PCB参批次统计数据
 @app.route('/Statistics/<int:batch_id>', methods=['GET'])
 def GetSingleStatistics(batch_id):
     stats = SingleStatistics(batch_id)
@@ -513,6 +521,7 @@ def GetRecentBatches():
     return jsonify(serialized_batches), 200
 
 
+# 查询最后一个批次信息
 @app.route('/last_batch', methods=['GET'])
 def GetLastBatch():
     # 按时间戳升序排列并获取最后一个批次
@@ -528,5 +537,3 @@ def GetLastBatch():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
-
-# TODO ：切换ak&sk和url
