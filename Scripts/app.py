@@ -300,7 +300,7 @@ def Detect(file, ak, sk, url):
 # 处理检测结果并保存到数据库
 def ProcessDetectionResults(file_path, batch_id, ak, sk, url):
     # 调用检测函数
-    detection_result = Detect(open(file_path, 'rb'), ak ,sk ,url)
+    detection_result = Detect(open(file_path, 'rb'), ak, sk, url)
 
     # 如果返回状态码，则失败
     if isinstance(detection_result, int):
